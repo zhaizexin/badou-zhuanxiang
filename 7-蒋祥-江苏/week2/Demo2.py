@@ -31,13 +31,10 @@ class TorchModel(nn.Module):
         x = self.pool(x.transpose(1, 2)).squeeze() #(batch_size, sen_len, vector_dim) -> (batch_size, vector_dim)
         x = self.classify(x)                       #(batch_size, vector_dim) -> (batch_size, 1)
         y_pred = self.activation(x, dim=1)                #(batch_size, 1) -> (batch_size, 1)
-        y_pred_label = []
         if y is not None:
             return self.loss(y_pred, y)   #预测值和真实值计算损失
         else:
-            for i in range(len(y_pred)):
-                y_pred_label.append(int(np.argmax(y_pred[i])))
-            return y_pred_label
+            return y_pred
 
 #字符集随便挑了一些字，实际上还可以扩充
 #为每个字生成一个标号
@@ -163,9 +160,9 @@ def predict(model_path, vocab_path, input_strings):
     model.eval()   #测试模式
     with torch.no_grad():  #不计算梯度
         result = model.forward(torch.LongTensor(x))  #模型预测
-    print(result)
-    # for i, input_string in enumerate(input_strings):
-    #     print("输入：%s, 预测类别：%d, 概率值：%f" % (input_string, round(float(result[i])), result[i])) #打印结果
+    for i, input_string in enumerate(input_strings):
+        print("输入：%s, 预测类别：%d, 概率值：%f" % (input_string, np.argmax(result[i]), result[i][np.argmax(result[i])])) #打印结果
+
 
 
 
