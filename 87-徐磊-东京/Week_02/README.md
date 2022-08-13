@@ -11,7 +11,6 @@
 ### 训练结果
 <br>
 <img width=350 src="./result/loss_acc.png">  
-
 <br>
 
 ### 测试结果
