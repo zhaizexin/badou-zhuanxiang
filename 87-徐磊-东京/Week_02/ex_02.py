@@ -6,7 +6,6 @@ import numpy as np
 import random
 import json
 import matplotlib.pyplot as plt
-import pdb
 
 """
 
@@ -24,7 +23,6 @@ class TorchModel(nn.Module):
         self.pool = nn.AvgPool1d(sentence_length)  # 池化层
         self.classify = nn.Linear(vector_dim, 5)  # 线性层
         self.activation = torch.sigmoid  # sigmoid归一化函数
-        # self.loss = nn.functional.mse_loss  # loss函数采用均方差损失
         self.loss = torch.nn.CrossEntropyLoss()
 
     # 当输入真实标签，返回loss值；无真实标签，返回预测值
@@ -33,7 +31,6 @@ class TorchModel(nn.Module):
         x = self.pool(x.transpose(1, 2)).squeeze()  # (batch_size, sen_len, vector_dim) -> (batch_size, vector_dim)
         x = self.classify(x)  # (batch_size, vector_dim) -> (batch_size, 1)
         y_pred = self.activation(x)  # (batch_size, 1) -> (batch_size, 1)
-        # pdb.set_trace()
         if y is not None:
             return self.loss(y_pred, (y.squeeze()).to(torch.long))  # 预测值和真实值计算损失
         else:
@@ -60,34 +57,29 @@ def build_sample(i, vocab, sentence_length):
     n_class = 5
     # ai
     if i % n_class == 1:
-        # pdb.set_trace()
         x = [random.choice(list(set(vocab.keys()) ^ set('mlnpcv'))) for _ in range(sentence_length)]
         id = random.randint(0, sentence_length - 2)
         x[id:id + 2] = 'ai'
         y = 1
     # ml
     elif i % n_class == 2:
-        # pdb.set_trace()
         x = [random.choice(list(set(vocab.keys()) ^ set('ainpcv'))) for _ in range(sentence_length)]
         id = random.randint(0, sentence_length - 2)
         x[id:id + 2] = 'ml'
         y = 2
     elif i % n_class == 3:
-        # pdb.set_trace()
         x = [random.choice(list(set(vocab.keys()) ^ set('aimcv'))) for _ in range(sentence_length)]
         id = random.randint(0, sentence_length - 3)
         x[id:id + 3] = 'nlp'
         y = 3
 
     elif i % n_class == 4:
-        # pdb.set_trace()
         x = [random.choice(list(set(vocab.keys()) ^ set('aimnlp'))) for _ in range(sentence_length)]
         id = random.randint(0, sentence_length - 2)
         x[id:id + 2] = 'cv'
         y = 4
 
     else:
-        # pdb.set_trace()
         id = random.randint(0, 1)
         str = 'ai'[id] + 'ml'[id] + 'nlp'[id] + 'cv'[id]
         x = [random.choice(list(set(vocab.keys()) ^ set(str))) for _ in range(sentence_length)]
@@ -125,10 +117,7 @@ def evaluate(model, vocab, sample_length, device):
            (y == 0).sum().item()))
     correct, wrong = 0, 0
     with torch.no_grad():
-        # import pdb;
-        # pdb.set_trace()
         y_pred = model(x)  # 模型预测
-        # for y_p, y_t in zip(y_pred, y):  # 与真实标签进行对比
         correct += (y_pred.argmax(1) == y.T).type(torch.float).sum().item()
     acc = correct / y_pred.shape[0]
     print("正确预测个数：%d, 正确率：%f" % (correct, acc))
@@ -196,7 +185,6 @@ def predict(model_path, vocab_path, input_strings):
     model.eval()  # 测试模式
     with torch.no_grad():  # 不计算梯度
         result = model.forward(torch.LongTensor(x))  # 模型预测
-    # pdb.set_trace()
     y_pred = result.argmax(1)
     for i, input_string in enumerate(input_strings):
         print("输入：%s, 预测类别：%d, 概率值：%f" % (input_string, y_pred[i].item(), torch.max(result[i]).item()))  # 打印结果
