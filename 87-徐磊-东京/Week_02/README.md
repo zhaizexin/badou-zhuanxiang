@@ -13,8 +13,6 @@
 <img width=350 src="./result/loss_acc.png">  
 
 <br>
-<br>
-
 #### 测试结果
 <br>
 
